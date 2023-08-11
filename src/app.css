@@ -1,3 +1,17 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    @font-face {
+        font-family: 'Bios';
+        font-style: normal;
+        src: url('/fonts/bios_regular.woff2');
+    }
+
+    @font-face {
+        font-family: 'Bios';
+        font-style: bold;
+        src: url('/fonts/bios_bold.woff2');
+    }
+}

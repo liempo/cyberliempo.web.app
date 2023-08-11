@@ -1,5 +1,14 @@
-<main class="h-screen w-full bg-red-300">
-	<div class="flex flex-col items-center justify-center h-full">
-		<h1 class="text-4xl font-bold text-slate-900">Cyberdeck</h1>
-	</div>
-</main>
+<script lang="ts">
+	import '../anim.css'
+</script>
+
+<div class="flex flex-col justify-center items-center h-screen bg-background">
+	<section>
+		<div class="text-center font-bios">
+			<span class="text-3xl text-gray-400"> Welcome to </span>
+			<span class="text-7xl text-accent drop-shadow-xl glitch layers" data-text="Liempo">
+				Liempo
+			</span>
+		</div>
+	</section>
+</div>
