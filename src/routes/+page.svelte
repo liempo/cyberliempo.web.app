@@ -5,7 +5,7 @@
 </script>
 
 <div class="flex flex-col justify-center items-center h-screen">
-	<background class="absolute inset-0 bg-black">
+	<background class="absolute inset-0 bg-background">
 		<Canvas>
 			<Outrun />
 		</Canvas>

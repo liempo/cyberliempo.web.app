@@ -17,23 +17,41 @@
 		ctx.drawImage(res, 0, 0)
 		heightMap = ctx.getImageData(0, 0, res.width, res.height)
 	})
+
+	$: if (geometries.length == 2) {
+		for (let index = 0; index <= terrainSize; index++) {
+			let bottomOffset = (terrainSize + 1) * terrainSize
+			positions[1][(bottomOffset + index) * 3 + 2] = positions[0][index * 3 + 2]
+			positions[0][(bottomOffset + index) * 3 + 2] = positions[1][index * 3 + 2]
+		}
+	}
 </script>
 
-<T.Mesh>
-	<T.DirectionalLight color={0x2dd7ff} intensity={0.85} position={[15, 1, 5]} />
-	<T.DirectionalLight color={0x2dd7ff} intensity={0.85} position={[-15, 1, 5]} />
+<T.PerspectiveCamera
+	makeDefault
+	fov={70}
+	near={1}
+	far={120}
+	position={[0, 0, 2.4]}
+	aspect={window.innerWidth / window.innerHeight}
+>
+	<OrbitControls />
+</T.PerspectiveCamera>
 
-	{#if heightMap}
+<T.DirectionalLight position={[15, 1, 5]} intensity={0.85} />
+<T.DirectionalLight position={[-15, 1, 5]} intensity={0.85} />
+
+{#if heightMap}
+	<T.Mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1.5, 0]}>
 		{#each ['normal', 'inverted'] as type}
 			<T.PlaneGeometry
 				args={[terrainSize, terrainSize, terrainSize, terrainSize]}
-				rotation={[-Math.PI / 2, 0, 0]}
 				on:create={({ ref, cleanup }) => {
 					// Get the geometry data
 					const refPositions = ref.attributes.position.array
 					const refUvMapping = ref.attributes.uv.array
 
-					// // update each vertex position's z value according to the value we extracted from the heightmap image
+					// Update each vertex position's z value according to the heightmap
 					for (let index = 0; index < refUvMapping.length / 2; index++) {
 						let vertexU = refUvMapping[index * 2]
 						let vertexV = refUvMapping[index * 2 + 1]
@@ -58,26 +76,20 @@
 					geometries.push(ref)
 					positions.push(refPositions)
 
-					console.log({
-						heightMap,
-						refPositions,
-						refUvMapping
+					cleanup(() => {
+						geometries.splice(geometries.indexOf(ref), 1)
+						positions.splice(positions.indexOf(refPositions), 1)
 					})
 				}}
 			/>
 		{/each}
-	{/if}
 
-	<T.MeshStandardMaterial metalness={0.2} roughness={0.7} color={0xffffff} emissive={0x000098} />
-</T.Mesh>
-
-<T.PerspectiveCamera
-	makeDefault
-	fov={70}
-	near={1}
-	far={120}
-	position={[0, 0, 2.4]}
-	aspect={window.innerWidth / window.innerHeight}
->
-	<OrbitControls />
-</T.PerspectiveCamera>
+		<T.MeshStandardMaterial
+			metalness={0.2}
+			roughness={0.7}
+			emissive={new THREE.Color(0x000098)}
+			color={new THREE.Color(0xffffff)}
+			flatShading
+		/>
+	</T.Mesh>
+{/if}
