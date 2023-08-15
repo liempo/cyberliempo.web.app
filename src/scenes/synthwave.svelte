@@ -8,18 +8,22 @@
 	import { Line2 } from 'three/examples/jsm/lines/Line2'
 
 	import { getZFromImageDataPoint, loadHeightMap } from '$lib'
+	import { browser } from '$app/environment'
+	import { onMount } from 'svelte'
 
 	const props: {
 		terrainWidth: number
 		terrainHeight: number
 		tileCount: number
+		speed: number
 	} = {
 		terrainWidth: 30,
 		terrainHeight: 30,
-		tileCount: 6
+		tileCount: 6,
+		speed: 1
 	}
 
-	let state: {
+	let terrain: {
 		planes: THREE.PlaneGeometry[]
 		positions: number[][]
 		lines: LineGeometry[]
@@ -28,6 +32,15 @@
 		positions: [],
 		lines: []
 	}
+
+	let movement: [x: number, y: number, z: number][] = [
+		[0, -1.5, 0],
+		[0, -1.5, -props.terrainHeight],
+		[0, -1.5, -props.terrainHeight * 2],
+		[0, -1.5, -props.terrainHeight * 3],
+		[0, -1.5, -props.terrainHeight * 4],
+		[0, -1.5, -props.terrainHeight * 5]
+	]
 
 	let isHeightMapLoaded = false
 	loadHeightMap('images/heightmap.png').then((res: any) => {
@@ -75,8 +88,8 @@
 			shearMatrix.makeShear(-0.5, 0, 0, 0, 0, 0)
 			geometry.applyMatrix4(shearMatrix)
 
-			state.planes.push(geometry)
-			state.positions.push(Array.from(planePositions))
+			terrain.planes.push(geometry)
+			terrain.positions.push(Array.from(planePositions))
 
 			// MARK: - Line Geometry
 			const lineGeometry = new LineGeometry()
@@ -102,24 +115,37 @@
 							mappedIndex = rowOffset + col + point + props.terrainWidth - 1
 						}
 
-						linePositions.push(state.positions[i][mappedIndex * 3])
-						linePositions.push(state.positions[i][mappedIndex * 3 + 1])
-						linePositions.push(state.positions[i][mappedIndex * 3 + 2])
+						linePositions.push(terrain.positions[i][mappedIndex * 3])
+						linePositions.push(terrain.positions[i][mappedIndex * 3 + 1])
+						linePositions.push(terrain.positions[i][mappedIndex * 3 + 2])
 					}
 				}
 			}
 
 			lineGeometry.setPositions(linePositions)
-			state.lines.push(lineGeometry)
-			state = state
+			terrain.lines.push(lineGeometry)
+			terrain = terrain
 		}
 
 		for (let index = 0; index <= props.terrainWidth; index++) {
 			let bottomOffset = (props.terrainWidth + 1) * props.terrainHeight
-			state.positions[1][(bottomOffset + index) * 3 + 2] = state.positions[0][index * 3 + 2]
-			state.positions[0][(bottomOffset + index) * 3 + 2] = state.positions[1][index * 3 + 2]
+			terrain.positions[1][(bottomOffset + index) * 3 + 2] = terrain.positions[0][index * 3 + 2]
+			terrain.positions[0][(bottomOffset + index) * 3 + 2] = terrain.positions[1][index * 3 + 2]
 		}
 	})
+
+	const animate = () => {
+		if (movement.length <= 0) return
+		const interval = 1 / 60
+		for (let index = 0; index < props.tileCount; index++) {
+			movement[index][2] += props.speed * interval
+			if (movement[index][2] >= props.terrainHeight) {
+				movement[index][2] -= props.tileCount * props.terrainHeight
+			}
+		}
+		requestAnimationFrame(animate)
+	}
+	requestAnimationFrame(animate)
 </script>
 
 <T.PerspectiveCamera
@@ -129,9 +155,7 @@
 	far={120}
 	position={[0, 0, 2.4]}
 	aspect={window.innerWidth / window.innerHeight}
->
-	<OrbitControls />
-</T.PerspectiveCamera>
+/>
 
 <T.DirectionalLight position={[60, 1, 5]} intensity={0.5} />
 <T.DirectionalLight position={[-60, 1, 5]} intensity={0.5} />
@@ -139,32 +163,28 @@
 {#if isHeightMapLoaded}
 	{#each { length: props.tileCount } as _, i}
 		<T.Mesh
-			args={[
-				state.planes[i % 2],
-				new THREE.MeshStandardMaterial({
-					color: new THREE.Color(0xffffff),
-					emissive: new THREE.Color(0x000098),
-					metalness: 0.2,
-					roughness: 0.7,
-					flatShading: true
-				})
-			]}
 			rotation={[-Math.PI / 2, 0, 0]}
-			position={[0, -1.5, -props.terrainHeight * i]}
+			position={movement[i]}
+			geometry={terrain.planes[i % 2]}
+			material={new THREE.MeshStandardMaterial({
+				color: new THREE.Color(0xffffff),
+				emissive: new THREE.Color(0x000098),
+				metalness: 0.2,
+				roughness: 0.7,
+				flatShading: true
+			})}
 		/>
 		<T
 			is={Line2}
-			args={[
-				state.lines[i % 2],
-				new LineMaterial({
-					color: 0xcee4ff,
-					linewidth: 0.04,
-					alphaToCoverage: false,
-					worldUnits: true
-				})
-			]}
 			rotation={[-Math.PI / 2, 0, 0]}
-			position={[0, -1.5, -props.terrainHeight * i]}
+			position={movement[i]}
+			geometry={terrain.lines[i % 2]}
+			material={new LineMaterial({
+				color: 0xcee4ff,
+				linewidth: 0.04,
+				alphaToCoverage: false,
+				worldUnits: true
+			})}
 		/>
 	{/each}
 {/if}
