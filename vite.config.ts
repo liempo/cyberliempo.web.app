@@ -5,5 +5,13 @@ export default defineConfig({
 	ssr: {
 		noExternal: ['three']
 	},
-	plugins: [sveltekit()]
+	plugins: [sveltekit()],
+	resolve: {
+		alias: {
+			'tailwind.config.js': 'tailwind.config.js'
+		}
+	},
+	optimizeDeps: {
+		include: ['tailwind.config.js']
+	}
 })

@@ -1,15 +1,16 @@
 <script lang="ts">
 	import * as THREE from 'three'
 	import { T } from '@threlte/core'
-	import { OrbitControls } from '@threlte/extras'
 
 	import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry'
 	import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial'
 	import { Line2 } from 'three/examples/jsm/lines/Line2'
 
 	import { getZFromImageDataPoint, loadHeightMap } from '$lib'
-	import { browser } from '$app/environment'
-	import { onMount } from 'svelte'
+
+	// @ts-ignore
+	import tailwindConfig from 'tailwind.config.js'
+	const colors = tailwindConfig.theme.extend.colors
 
 	const props: {
 		terrainWidth: number
@@ -167,8 +168,8 @@
 			position={movement[i]}
 			geometry={terrain.planes[i % 2]}
 			material={new THREE.MeshStandardMaterial({
-				color: new THREE.Color(0xffffff),
-				emissive: new THREE.Color(0x000098),
+				color: 'white',
+				emissive: colors.extra,
 				metalness: 0.2,
 				roughness: 0.7,
 				flatShading: true
@@ -180,7 +181,7 @@
 			position={movement[i]}
 			geometry={terrain.lines[i % 2]}
 			material={new LineMaterial({
-				color: 0xcee4ff,
+				color: colors.accent,
 				linewidth: 0.04,
 				alphaToCoverage: false,
 				worldUnits: true
