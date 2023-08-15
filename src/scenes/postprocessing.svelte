@@ -13,11 +13,11 @@
 	const { camera, scene, renderer, size } = useThrelte()
 	const composer = new EffectComposer(renderer)
 
-	scene.background = new THREE.Color(colors.background)
+	scene.background = new THREE.Color(0x01012b)
 	const setupEffectComposer = (camera: THREE.Camera) => {
 		const pass = new UnrealBloomPass(
 			new THREE.Vector2(window.innerWidth, window.innerHeight - window.innerWidth / 4),
-			0.5, // strength
+			0.2, // strength
 			0.2, // radius
 			0.4 // threshold
 		)

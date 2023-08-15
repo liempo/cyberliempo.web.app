@@ -168,8 +168,8 @@
 <T.DirectionalLight position={[30, 1, 5]} intensity={0.85} color={colors.accent} />
 <T.DirectionalLight position={[-30, 1, 5]} intensity={0.85} color={colors.accent} />
 
-<T.Mesh position={[0, 10, -100]}>
-	<T.SphereGeometry args={[24, 64, 64]} />
+<T.Mesh position={[0, 5, -100]}>
+	<T.SphereGeometry args={[30, 64, 64]} />
 	<T.ShaderMaterial
 		{vertexShader}
 		{fragmentShader}
@@ -205,7 +205,7 @@
 			geometry={terrain.planes[i % 2]}
 			material={new THREE.MeshStandardMaterial({
 				color: 'white',
-				emissive: 'black',
+				emissive: 'bkack',
 				metalness: 0.2,
 				roughness: 0.8,
 				flatShading: true
