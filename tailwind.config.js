@@ -8,18 +8,18 @@ export default {
 			},
 			colors: {
 				// - Cyberpunk 2077
-				// background: '#461E52',
-				// primary: '#DD517F',
-				// secondary: '#E68E36',
-				// accent: '#556DC8',
-				// extra: '#7998EE'
+				background: '#051C2C',
+				primary: '#E93CAC',
+				secondary: '#00BCE1',
+				accent: '#1E22AA',
+				extra: '#6f58fc'
 
-				// - Outrun 1984
-				background: '#FF68A8',
-				primary: '#64CFF7',
-				secondary: '#F7E752',
-				accent: '#CA7CD8',
-				extra: '#3968CB'
+				// Syntwave
+				// background: '#0D0D0D',
+				// primary: '#FF00FF',
+				// secondary: '#00FFFF',
+				// accent: '#FF0000',
+				// extra: '#FF00FF'
 			}
 		}
 	},

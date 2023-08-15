@@ -6,7 +6,13 @@
 	import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial'
 	import { Line2 } from 'three/examples/jsm/lines/Line2'
 
-	import { getZFromImageDataPoint, loadHeightMap } from '$lib'
+	import {
+		vertexShader,
+		fragmentShader,
+		getZFromImageDataPoint,
+		loadHeightMap,
+		hexToRgb
+	} from '$lib'
 
 	// @ts-ignore
 	import tailwindConfig from 'tailwind.config.js'
@@ -158,8 +164,37 @@
 	aspect={window.innerWidth / window.innerHeight}
 />
 
-<T.DirectionalLight position={[60, 1, 5]} intensity={0.5} />
-<T.DirectionalLight position={[-60, 1, 5]} intensity={0.5} />
+<T.DirectionalLight position={[30, 1, 5]} intensity={0.85} color={colors.primary} />
+<T.DirectionalLight position={[-30, 1, 5]} intensity={0.85} color={colors.primary} />
+
+<T.Mesh position={[0, 10, -100]}>
+	<T.SphereGeometry args={[24, 64, 64]} />
+	<T.ShaderMaterial
+		{vertexShader}
+		{fragmentShader}
+		uniforms={{
+			u_time: { value: 0.0 },
+			u_mouse: {
+				value: {
+					x: 0.0,
+					y: 0.0
+				}
+			},
+			u_resolution: {
+				value: {
+					x: window.innerWidth * window.devicePixelRatio,
+					y: window.innerHeight * window.devicePixelRatio
+				}
+			},
+			color_main: {
+				value: hexToRgb(colors.primary, true)
+			},
+			color_accent: {
+				value: hexToRgb(colors.secondary, true)
+			}
+		}}
+	/>
+</T.Mesh>
 
 {#if isHeightMapLoaded}
 	{#each { length: props.tileCount } as _, i}
@@ -169,9 +204,9 @@
 			geometry={terrain.planes[i % 2]}
 			material={new THREE.MeshStandardMaterial({
 				color: 'white',
-				emissive: colors.extra,
+				emissive: colors.primary,
 				metalness: 0.2,
-				roughness: 0.7,
+				roughness: 0.8,
 				flatShading: true
 			})}
 		/>
@@ -181,7 +216,7 @@
 			position={movement[i]}
 			geometry={terrain.lines[i % 2]}
 			material={new LineMaterial({
-				color: colors.accent,
+				color: colors.extra,
 				linewidth: 0.04,
 				alphaToCoverage: false,
 				worldUnits: true
