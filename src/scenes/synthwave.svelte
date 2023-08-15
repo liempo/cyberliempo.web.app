@@ -5,6 +5,7 @@
 	import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry'
 	import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial'
 	import { Line2 } from 'three/examples/jsm/lines/Line2'
+	import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass'
 
 	import {
 		vertexShader,
@@ -164,8 +165,8 @@
 	aspect={window.innerWidth / window.innerHeight}
 />
 
-<T.DirectionalLight position={[30, 1, 5]} intensity={0.85} color={colors.primary} />
-<T.DirectionalLight position={[-30, 1, 5]} intensity={0.85} color={colors.primary} />
+<T.DirectionalLight position={[30, 1, 5]} intensity={0.85} color={colors.extra} />
+<T.DirectionalLight position={[-30, 1, 5]} intensity={0.85} color={colors.extra} />
 
 <T.Mesh position={[0, 10, -100]}>
 	<T.SphereGeometry args={[24, 64, 64]} />
@@ -204,7 +205,7 @@
 			geometry={terrain.planes[i % 2]}
 			material={new THREE.MeshStandardMaterial({
 				color: 'white',
-				emissive: colors.primary,
+				emissive: colors.accent,
 				metalness: 0.2,
 				roughness: 0.8,
 				flatShading: true
@@ -216,7 +217,7 @@
 			position={movement[i]}
 			geometry={terrain.lines[i % 2]}
 			material={new LineMaterial({
-				color: colors.extra,
+				color: colors.accent,
 				linewidth: 0.04,
 				alphaToCoverage: false,
 				worldUnits: true
