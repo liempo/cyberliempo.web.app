@@ -35,6 +35,7 @@
 		"@threlte/core": "^6.0.3",
 		"@threlte/extras": "^5.2.0",
 		"@types/three": "^0.155.0",
+		"postprocessing": "^6.33.0",
 		"three": "^0.155.0"
 	}
 }
