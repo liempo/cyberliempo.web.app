@@ -1,4 +1,5 @@
 /**
+ *
  * original reference: https://gist.github.com/jawdatls/465d82f2158e1c4ce161
  * This function lets you get the greyscale color value from a specific point in an image
  * In this scenario, we pass in a displacement map as imageData,
@@ -33,7 +34,7 @@ export function getZFromImageDataPoint(
 }
 
 /**
- * This loadImage function returns a Promise that is resolved when the image finishes loading
+ * This loadHeightMap function returns a Promise that is resolved when the height map (image) finishes loading
  * if you use it with await, it returns the loaded image object
  * @param {string} path image file path
  * @returns a Promise that resolves with the value assigned as the loaded image

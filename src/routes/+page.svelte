@@ -1,13 +1,14 @@
 <script lang="ts">
 	import '../glitch.css'
 	import { Canvas } from '@threlte/core'
-	import Outrun from '../scenes/outrun.svelte'
+	import Synthwave from '../scenes/synthwave.svelte'
 </script>
 
 <div class="flex flex-col justify-center items-center h-screen">
 	<background class="absolute inset-0 bg-background">
 		<Canvas rendererParameters={{ antialias: true, logarithmicDepthBuffer: true }}>
-			<Outrun />
+			<!-- <Outrun /> -->
+			<Synthwave />
 		</Canvas>
 	</background>
 
