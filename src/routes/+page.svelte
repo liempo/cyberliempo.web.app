@@ -6,7 +6,7 @@
 
 <div class="flex flex-col justify-center items-center h-screen">
 	<background class="absolute inset-0 bg-background">
-		<Canvas>
+		<Canvas rendererParameters={{ antialias: true, logarithmicDepthBuffer: true }}>
 			<Outrun />
 		</Canvas>
 	</background>

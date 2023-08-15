@@ -2,11 +2,20 @@
 	import * as THREE from 'three'
 	import { T } from '@threlte/core'
 	import { OrbitControls } from '@threlte/extras'
+
+	import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry'
+	import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial'
+	import { Line2 } from 'three/examples/jsm/lines/Line2'
+
 	import { getZFromImageDataPoint, loadHeightMap } from './outrun'
 
-	const terrainSize = 30
-	const geometries = []
-	const positions = []
+	const terrainWidth = 30
+	const terrainHeight = 30
+
+	let planes = []
+	let planePositions = []
+	let lines = []
+	let linePositions = []
 
 	let heightMap: ImageData | null = null
 	loadHeightMap('images/heightmap.png').then((res) => {
@@ -18,11 +27,11 @@
 		heightMap = ctx.getImageData(0, 0, res.width, res.height)
 	})
 
-	$: if (geometries.length == 2) {
-		for (let index = 0; index <= terrainSize; index++) {
-			let bottomOffset = (terrainSize + 1) * terrainSize
-			positions[1][(bottomOffset + index) * 3 + 2] = positions[0][index * 3 + 2]
-			positions[0][(bottomOffset + index) * 3 + 2] = positions[1][index * 3 + 2]
+	$: if (planes.length == 2) {
+		for (let index = 0; index <= terrainWidth; index++) {
+			let bottomOffset = (terrainWidth + 1) * terrainHeight
+			planePositions[1][(bottomOffset + index) * 3 + 2] = planePositions[0][index * 3 + 2]
+			planePositions[0][(bottomOffset + index) * 3 + 2] = planePositions[1][index * 3 + 2]
 		}
 	}
 </script>
@@ -42,10 +51,10 @@
 <T.DirectionalLight position={[-15, 1, 5]} intensity={0.85} />
 
 {#if heightMap}
-	<T.Mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1.5, 0]}>
-		{#each ['normal', 'inverted'] as type}
+	{#each ['normal', 'inverted'] as type}
+		<T.Mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1.5, 0]}>
 			<T.PlaneGeometry
-				args={[terrainSize, terrainSize, terrainSize, terrainSize]}
+				args={[terrainWidth, terrainHeight, terrainWidth, terrainHeight]}
 				on:create={({ ref, cleanup }) => {
 					// Get the geometry data
 					const refPositions = ref.attributes.position.array
@@ -72,24 +81,69 @@
 					shearMatrix.makeShear(-0.5, 0, 0, 0, 0, 0)
 					ref.applyMatrix4(shearMatrix)
 
-					// Update the cached geometry data
-					geometries.push(ref)
-					positions.push(refPositions)
+					planes = [...planes, ref]
+					planePositions = [...planePositions, refPositions]
 
 					cleanup(() => {
-						geometries.splice(geometries.indexOf(ref), 1)
-						positions.splice(positions.indexOf(refPositions), 1)
+						planes.splice(geometries.indexOf(ref), 1)
+						planePositions.splice(positions.indexOf(refPositions), 1)
 					})
 				}}
 			/>
-		{/each}
 
-		<T.MeshStandardMaterial
-			metalness={0.2}
-			roughness={0.7}
-			emissive={new THREE.Color(0x000098)}
-			color={new THREE.Color(0xffffff)}
-			flatShading
+			<T.MeshStandardMaterial
+				metalness={0.2}
+				roughness={0.7}
+				emissive={new THREE.Color(0x000098)}
+				color={new THREE.Color(0xffffff)}
+				flatShading
+			/>
+		</T.Mesh>
+
+		<T
+			is={Line2}
+			position={[0, -1.5, 0]}
+			rotation={[-Math.PI / 2, 0, 0]}
+			geometry={(() => {
+				let geometry = new LineGeometry()
+				if (planePositions.length == 0) {
+					return geometry
+				}
+				for (let row = 0; row < terrainHeight; row++) {
+					let isEvenRow = row % 2 == 0
+					for (
+						let col = isEvenRow ? 0 : terrainWidth - 1;
+						isEvenRow ? col < terrainWidth : col >= 0;
+						isEvenRow ? col++ : col--
+					) {
+						for (
+							let point = isEvenRow ? 0 : 3;
+							isEvenRow ? point < 4 : point >= 0;
+							isEvenRow ? point++ : point--
+						) {
+							let mappedIndex
+							let rowOffset = row * (terrainWidth + 1)
+							if (point < 2) {
+								mappedIndex = rowOffset + col + point
+							} else {
+								mappedIndex = rowOffset + col + point + terrainWidth - 1
+							}
+							linePositions.push(planePositions[type == 'normal' ? 0 : 1][mappedIndex * 3])
+							linePositions.push(planePositions[type == 'normal' ? 0 : 1][mappedIndex * 3 + 1])
+							linePositions.push(planePositions[type == 'normal' ? 0 : 1][mappedIndex * 3 + 2])
+						}
+					}
+				}
+				geometry.setPositions(linePositions)
+				lines.push(geometry)
+				return geometry
+			})()}
+			material={new LineMaterial({
+				color: 0xcee4ff,
+				linewidth: 0.04,
+				alphaToCoverage: false,
+				worldUnits: true
+			})}
 		/>
-	</T.Mesh>
+	{/each}
 {/if}
