@@ -1,41 +1,83 @@
 <script lang="ts">
+	import * as THREE from 'three'
 	import { T } from '@threlte/core'
-	import { Grid, interactivity } from '@threlte/extras'
-	import { tweened } from 'svelte/motion'
-	import { linear } from 'svelte/easing'
+	import { OrbitControls } from '@threlte/extras'
+	import { getZFromImageDataPoint, loadHeightMap } from './outrun'
 
-	interactivity()
-	const position = tweened(0, { easing: linear, duration: 500 })
-	$: {
-		const minValue = -10
-		const newValue = $position - 1
-		if (newValue < minValue) {
-			position.set($position + minValue * -1, { duration: 0.01 })
-		} else {
-			position.set(newValue)
-		}
-		console.log($position)
-	}
+	const terrainSize = 30
+	const geometries = []
+	const positions = []
+
+	let heightMap: ImageData | null = null
+	loadHeightMap('images/heightmap.png').then((res) => {
+		const canvas = document.createElement('canvas')
+		canvas.width = res.width
+		canvas.height = res.height
+		const ctx = canvas.getContext('2d')
+		ctx.drawImage(res, 0, 0)
+		heightMap = ctx.getImageData(0, 0, res.width, res.height)
+	})
 </script>
 
-<Grid
-	axes="xzy"
-	cellColor={'#F73D93'}
-	cellSize={1}
-	infiniteGrid={true}
-	cellThickness={1.4}
-	sectionColor={'#F73D93'}
-	sectionSize={5}
-	sectionThickness={1.6}
-	fadeDistance={100}
-	fadeStrength={1.0}
-	gridSize={[1, 1]}
-/>
+<T.Mesh>
+	<T.DirectionalLight color={0x2dd7ff} intensity={0.85} position={[15, 1, 5]} />
+	<T.DirectionalLight color={0x2dd7ff} intensity={0.85} position={[-15, 1, 5]} />
+
+	{#if heightMap}
+		{#each ['normal', 'inverted'] as type}
+			<T.PlaneGeometry
+				args={[terrainSize, terrainSize, terrainSize, terrainSize]}
+				rotation={[-Math.PI / 2, 0, 0]}
+				on:create={({ ref, cleanup }) => {
+					// Get the geometry data
+					const refPositions = ref.attributes.position.array
+					const refUvMapping = ref.attributes.uv.array
+
+					// // update each vertex position's z value according to the value we extracted from the heightmap image
+					for (let index = 0; index < refUvMapping.length / 2; index++) {
+						let vertexU = refUvMapping[index * 2]
+						let vertexV = refUvMapping[index * 2 + 1]
+
+						// Update the z positions according to the heightmap
+						let terrainHeight = getZFromImageDataPoint(
+							heightMap,
+							type === 'normal' ? vertexU : 1 - vertexU,
+							vertexV,
+							heightMap.width,
+							heightMap.height
+						)
+						refPositions[index * 3 + 2] = terrainHeight
+					}
+
+					// Skew the plane geometry
+					const shearMatrix = new THREE.Matrix4()
+					shearMatrix.makeShear(-0.5, 0, 0, 0, 0, 0)
+					ref.applyMatrix4(shearMatrix)
+
+					// Update the cached geometry data
+					geometries.push(ref)
+					positions.push(refPositions)
+
+					console.log({
+						heightMap,
+						refPositions,
+						refUvMapping
+					})
+				}}
+			/>
+		{/each}
+	{/if}
+
+	<T.MeshStandardMaterial metalness={0.2} roughness={0.7} color={0xffffff} emissive={0x000098} />
+</T.Mesh>
 
 <T.PerspectiveCamera
 	makeDefault
-	position={[0, 1, $position]}
-	rotation={[0, 0, 0]}
-	fov={36}
-	target={[0, 0, 0]}
-/>
+	fov={70}
+	near={1}
+	far={120}
+	position={[0, 0, 2.4]}
+	aspect={window.innerWidth / window.innerHeight}
+>
+	<OrbitControls />
+</T.PerspectiveCamera>
